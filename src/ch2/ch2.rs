@@ -4,6 +4,7 @@ use std::io;
 fn guess_num_print() {
     println!("Guess the number!");
     let secret_num: u8 = rand::thread_rng().gen_range(1..=100);
+    println!("This is secret number {secret_num}, printing only for fast exec.");
     let mut number_of_guesses: u8 = 0;
     loop {
         number_of_guesses += 1;
@@ -14,9 +15,15 @@ fn guess_num_print() {
         }
         let mut guess = String::new();
         println!("please input the guessed number.");
-        io::stdin()
-            .read_line(&mut guess)
-            .expect("Failed to read line");
+        let input_num = io::stdin().read_line(&mut guess);
+        match input_num {
+            Ok(_) => {
+                println!("You entered: {}", guess);
+            }
+            Err(err) => {
+                println!("Error: {}", err);
+            }
+        }
         let guess: u8 = match guess.trim().parse() {
             Ok(num) => num,
             Err(_) => continue,
