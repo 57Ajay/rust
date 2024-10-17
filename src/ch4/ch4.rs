@@ -14,7 +14,13 @@ fn own(owned_str: String) {
     println!("My name: {st}, and this is owned value: {owned_str}");
 }
 
+fn calculate_length(s: &String) -> usize {
+    s.len()
+}
+
 pub fn main() {
     let s = String::from("Owned str.");
     own(s);
+    let s1 = String::from("AJay Upadhyay");
+    println!("{:?}", calculate_length(&s1));
 }

@@ -1,7 +1,7 @@
 //ch3 is about Common Programming Concepts in rust.
 
+use super::exer;
 use std::io;
-
 fn shadowing_x() {
     let x: u8 = 5;
     let x = x + 1;
@@ -134,4 +134,6 @@ pub fn main() {
     expression();
     loop_();
     loop_label();
+    println!("----------ch3-Exercise-----------");
+    exer::main();
 }

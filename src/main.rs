@@ -6,6 +6,7 @@ mod ch2 {
 }
 mod ch3 {
     pub mod ch3;
+    pub mod exer;
 }
 mod ch4 {
     pub mod ch4;
