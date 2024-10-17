@@ -11,6 +11,9 @@ mod ch3 {
 mod ch4 {
     pub mod ch4;
 }
+mod ch5 {
+    pub mod ch5;
+}
 fn main() {
     println!("---------ch1---------");
     ch1::ch1::main();
@@ -24,4 +27,7 @@ fn main() {
     println!("---------ch4---------");
     ch4::ch4::main();
     println!("---------ch4---------\n");
+    println!("---------ch5---------");
+    ch5::ch5::main();
+    println!("---------ch5---------\n");
 }

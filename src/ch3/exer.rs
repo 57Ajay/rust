@@ -1,5 +1,5 @@
 use std::{
-    fs,
+    fs::{self, File},
     io::{self, BufRead},
     path::Path,
 };
@@ -39,6 +39,39 @@ fn days_of_chrismas() -> io::Result<()> {
     Ok(())
 }
 
+fn find_in_file(path: &str, keyword: &str) -> io::Result<Vec<(usize, String)>> {
+    let file = File::open(path)?;
+    let render = io::BufReader::new(file);
+    let mut results = Vec::new();
+
+    for (line_number, line) in render.lines().enumerate() {
+        let line = line?;
+        if line.contains(keyword) {
+            results.push((line_number + 1, line));
+        }
+    }
+    Ok(results)
+}
+
+fn call_finder() -> io::Result<()> {
+    let path = "resources/twelve_days_of_christmas.txt";
+    let keyword = "  And a Partridge in a Pear Tree".trim();
+    match find_in_file(path, keyword) {
+        Ok(results) => {
+            if results.is_empty() {
+                println!("No occurrences of '{}' found.", keyword);
+            } else {
+                for (line_number, line) in results {
+                    println!("Found on line {}: {}", line_number, line);
+                }
+            }
+        }
+        Err(e) => println!("Error reading file: {}", e),
+    }
+
+    Ok(())
+}
+
 pub fn main() {
     let mut n = String::new();
     println!("Please input a integer n to find nth fib number: ");
@@ -49,5 +82,6 @@ pub fn main() {
     println!(
         "------------------------------------------------------------\n{:?}",
         days_of_chrismas()
-    )
+    );
+    println!("Word finder in file: {:?}\n", call_finder());
 }
