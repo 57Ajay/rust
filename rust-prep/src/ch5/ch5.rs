@@ -52,10 +52,12 @@ impl Rectangle {
         self.bredth * self.length
     }
     fn can_hold(&self, rect: &Rectangle) -> bool {
-        if self.bredth > rect.bredth && self.length > rect.length {
-            true
-        } else {
-            false
+        self.bredth > rect.bredth && self.length > rect.length
+    }
+    fn square(val: u32) -> Self {
+        Self {
+            bredth: val,
+            length: val,
         }
     }
 }
@@ -71,7 +73,9 @@ pub fn main() {
         length: 11,
         bredth: 30,
     };
+    let sqr1 = Rectangle::square(12);
     println!("area of rect1: {:?}", area(&rect1));
     println!("area of rect1 with method area: {:?}", rect1.area());
     println!("Can rect1 hold rect2? : {:?}", rect1.can_hold(&rect2));
+    println!("area of sqe1: {:?}", sqr1.area());
 }
