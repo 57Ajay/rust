@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "intrviw-prep"
+name = "problem-sol"
 version = "0.1.0"
