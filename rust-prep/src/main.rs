@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 mod ch1 {
     pub mod ch1;
 }
@@ -14,7 +16,11 @@ mod ch4 {
 mod ch5 {
     pub mod ch5;
 }
+mod ch6 {
+    pub mod ch6;
+}
 fn main() {
+    let now = Instant::now();
     println!("---------ch1---------");
     ch1::ch1::main();
     println!("---------ch1---------\n");
@@ -30,4 +36,12 @@ fn main() {
     println!("---------ch5---------");
     ch5::ch5::main();
     println!("---------ch5---------\n");
+    println!("---------ch6---------");
+    ch6::ch6::main();
+    println!("---------ch5---------\n");
+    let elapsed_time = now.elapsed();
+    println!(
+        "Running all these chapters took {} seconds.",
+        elapsed_time.as_secs()
+    );
 }
