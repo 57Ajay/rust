@@ -24,6 +24,7 @@ mod ch7 {
 }
 mod ch8 {
     pub mod ch8;
+    pub mod exer;
 }
 fn main() {
     let now = Instant::now();
