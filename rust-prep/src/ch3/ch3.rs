@@ -1,6 +1,6 @@
 //ch3 is about Common Programming Concepts in rust.
-
 use super::exer;
+use crate::ch1;
 use std::io;
 fn shadowing_x() {
     let x: u8 = 5;
@@ -14,6 +14,12 @@ fn shadowing_x() {
 }
 
 fn tup() {
+    println!("\nThis is ch1 from inside ch3\n");
+    ch1::ch1::main();
+    ch1::ch1::to_be_used_by_ch3();
+    let x = ch1::ch1::X;
+    println!("This is x from ch1: {}", x);
+    println!("\nEnd of ch1 from ch3\n");
     //THis is a tuple and they can not grow and srink;
     let tup = (12.9, 57, 'A', "Ajay");
     //we can destructure a tuple in rust like this;

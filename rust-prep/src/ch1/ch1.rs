@@ -8,6 +8,11 @@
 //-> 'cargo check'.
 //and to relese the project -> 'cargo build --release'
 
+//Ignore this to_be_used_by_ch3 fn untill ch3;
+pub fn to_be_used_by_ch3() {
+    println!("I am being used in ch3")
+}
+pub static X: u8 = 3;
 pub fn main() {
     println!("This is rust chapter 1");
 }

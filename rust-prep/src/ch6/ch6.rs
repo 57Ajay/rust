@@ -63,6 +63,16 @@ fn plus_one(x: Option<i32>) -> Option<i32> {
     }
 }
 
+// control flow with if let;
+fn if_let() {
+    let x = Some(String::from("Ajay"));
+    if let Some(i) = x {
+        println!("User's name: {:?}", i);
+    } else {
+        println!("Not reguler user");
+    }
+}
+
 pub fn main() {
     let four = IpAddrKind::V4;
     let six = IpAddrKind::V6;
@@ -86,4 +96,5 @@ pub fn main() {
         None => -1,
     };
     println!("{:?}", result);
+    if_let();
 }
