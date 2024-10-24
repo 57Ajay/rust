@@ -92,7 +92,7 @@ fn handle_add_employee(input: &str, company: &mut HashMap<String, Vec<String>>) 
     }
 
     let employee = parts[1].to_string(); // Employee's name
-    let department = parts[3..].join(" "); // Department name (in case it has spaces)
+    let department = parts[3..].join(" ").to_uppercase(); // Department name (in case it has spaces)
 
     // Insert the employee into the department in the HashMap
     company
@@ -110,7 +110,7 @@ fn handle_list_employees_in_department(department: &str, company: &HashMap<Strin
         sorted_employees.sort(); // Sort employees alphabetically
         println!("Employees in {} department:", department);
         for employee in sorted_employees {
-            println!("{}", employee);
+            println!(">> {}", employee);
         }
     } else {
         println!("No such department found.");
@@ -127,7 +127,7 @@ fn handle_list_all_employees(company: &HashMap<String, Vec<String>>) {
         employees.sort(); // Sort employees within each department
         println!("{} department:", department);
         for employee in employees {
-            println!("  {}", employee);
+            println!(">>   {}", employee);
         }
     }
 }
@@ -144,8 +144,8 @@ pub fn main() {
     loop {
         println!("\nChoose an option:");
         println!("1. Add employee to department (e.g., 'Add Sally to Engineering')");
-        println!("2. Get list of employees in a department (e.g., 'Engineering')");
-        println!("3. Get list of all employees by department");
+        println!("2. Get list of employees in a department (e.g., 'ENGINEERING', Make sure all the chars are Uppercase.)");
+        println!("3. Get list of all employees by department (enter 3)");
         println!("4. Exit");
 
         // Get input from the user
