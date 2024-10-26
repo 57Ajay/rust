@@ -55,7 +55,7 @@ fn find_in_file(path: &str, keyword: &str) -> io::Result<Vec<(usize, String)>> {
 #[allow(dead_code)]
 fn call_finder() -> io::Result<()> {
     let path = "resources/twelve_days_of_christmas.txt";
-    let keyword = "  And a Partridge in a Pear Tree".trim();
+    let keyword = "ch6::ch6".trim();
     match find_in_file(path, keyword) {
         Ok(results) => {
             if results.is_empty() {
@@ -96,7 +96,10 @@ pub fn main() {
     let n = n.trim().parse().expect("Not a valid Integer");
     println!("The {n}-th fib number is: {:?}", nth_fib(n));
     println!("\n-----------------Lines of the song 12 days of chrismas---------------\n");
-    days_of_chrismas().expect("Failed to read lines of the song.");
+    match days_of_chrismas() {
+        Ok(x) => println!("Song Lyrics: \n {x:#?}"),
+        Err(err) => println!("{err:#?}"),
+    };
     println!("\n-------Word and sentence finder in a file------- \n");
     call_finder_with_params(
         "resources/twelve_days_of_christmas.txt",

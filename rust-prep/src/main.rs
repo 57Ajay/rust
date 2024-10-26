@@ -29,6 +29,9 @@ mod ch8 {
 mod ch9 {
     pub mod ch9;
 }
+mod ch10 {
+    pub mod ch10;
+}
 fn main() {
     let now = Instant::now();
     println!("---------ch1---------");
@@ -58,6 +61,9 @@ fn main() {
     println!("---------ch9----------");
     ch9::ch9::main();
     println!("---------ch9----------\n");
+    println!("---------ch10----------");
+    ch10::ch10::main();
+    println!("---------ch10----------\n");
     let elapsed_time = now.elapsed();
     println!(
         "Running all these chapters took {} seconds.",
