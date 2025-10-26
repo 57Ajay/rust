@@ -38,6 +38,9 @@ mod ch11 {
 mod ch12 {
     pub mod ch12;
 }
+mod ch13 {
+    pub mod ch13;
+}
 
 #[allow(dead_code)]
 fn main() {
@@ -78,6 +81,9 @@ fn main() {
     println!("---------ch12----------\n");
     ch12::ch12::main();
     println!("---------ch12----------\n");
+    println!("---------ch13----------\n");
+    ch13::ch13::main();
+    println!("---------ch13----------\n");
 
     let elapsed_time = now.elapsed();
     println!(
