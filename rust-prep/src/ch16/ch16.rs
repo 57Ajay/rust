@@ -146,10 +146,10 @@ fn add_large_num(num: u64) -> u64 {
 }
 
 pub fn main() {
-    // threader();
-    // thread_join();
-    // move_thread();
-    // channel_thread();
-    // mutex_main();
+    threader();
+    thread_join();
+    move_thread();
+    channel_thread();
+    mutex_main();
     println!("{}", add_large_num(1000));
 }
