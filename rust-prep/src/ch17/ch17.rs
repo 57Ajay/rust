@@ -4,30 +4,58 @@ use std::collections::HashMap;
 use std::future::Future;
 use std::io::{Read, Write};
 use std::net::TcpStream;
-use std::pin::Pin;
+use std::pin::{pin, Pin};
+use std::process::Output;
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
-use std::time::Duration;
-use trpl;
+use std::thread;
+use std::time::{Duration, Instant};
+use trpl::{self, Either};
 
-fn trpl_main() {
-    trpl::run(async {
-        // will block untill executed
-        trpl::spawn_task(async {
-            for i in 1..10 {
-                println!("hi number {i} from the first task!");
-                trpl::sleep(Duration::from_millis(500)).await;
-            }
-        });
+async fn trpl_main() {
+    // trpl::run(async {
+    //     // will block untill executed
+    //     trpl::spawn_task(async {
+    //         for i in 1..10 {
+    //             println!("hi number {i} from the first task!");
+    //             trpl::sleep(Duration::from_millis(500)).await;
+    //         }
+    //     });
+    //
+    //     for i in 1..5 {
+    //         println!("hi number {i} from the second task!");
+    //         trpl::sleep(Duration::from_millis(500)).await;
+    //     }
+    // });
 
-        for i in 1..5 {
-            println!("hi number {i} from the second task!");
-            trpl::sleep(Duration::from_millis(500)).await;
-        }
-    });
+    // trpl::run(async {
+    //     let (tx, mut rx) = trpl::channel();
+    //
+    //     let vals = vec![
+    //         String::from("hi"),
+    //         String::from("from"),
+    //         String::from("the"),
+    //         String::from("future"),
+    //     ];
+    //
+    //     for val in vals {
+    //         tx.send(val).unwrap();
+    //         trpl::sleep(Duration::from_millis(1000)).await;
+    //     }
+    //     drop(tx);
+    //
+    //     while let Some(value) = rx.recv().await {
+    //         println!("received '{value}'");
+    //     }
+    // });
+    //
+    // ok let's make above code concurrent
 
-    trpl::run(async {
-        let (tx, mut rx) = trpl::channel();
+    let (tx, mut rx) = trpl::channel();
+    let tx_clone = tx.clone();
 
+    let f1 = async move {
+        // we can simply remove this move after async but then we will have to
+        // manually drop tx using drop(tx).
         let vals = vec![
             String::from("hi"),
             String::from("from"),
@@ -35,27 +63,176 @@ fn trpl_main() {
             String::from("future"),
         ];
 
-        for val in vals {
+        for (i, val) in vals.into_iter().enumerate() {
             tx.send(val).unwrap();
-            trpl::sleep(Duration::from_millis(5)).await;
+            if i == 2 {
+                trpl::sleep(Duration::from_millis(10)).await;
+            } else {
+                trpl::sleep(Duration::from_millis(1000)).await;
+            }
         }
-        drop(tx);
+        // drop(tx); // if move after async is removed this line needs to be uncommented
+    };
 
-        while let Some(value) = rx.recv().await {
-            println!("received '{value}'");
+    let f2 = async {
+        while let Some(val) = rx.recv().await {
+            println!("from conc one -> {val}");
+        }
+    };
+
+    let f3 = async {
+        tx_clone.send("This one is from me".to_string()).unwrap();
+        drop(tx_clone);
+    };
+
+    // trpl::join3(f1, f2, f3).await;
+    // trpl::join!(f1, f2, f3); // better solution as we can pass any number of futures
+    // or what we can do is push all the futures in a vector
+    // and then use join_all function
+    let mut futures = Vec::<Pin<Box<dyn Future<Output = ()>>>>::new(); // if we won't use
+                                                                       // Pin it won't compile
+                                                                       // why? check by removing
+                                                                       // Pin
+    futures.push(Box::pin(f1));
+    futures.push(Box::pin(f2));
+    futures.push(Box::pin(f3));
+
+    trpl::join_all(futures).await;
+
+    // --------------------------------------------------
+    // this monstrocity can be avoided if I do this ->   |
+    //  let tx1_fut = pin!(async move {                  |
+    // --snip--                                          |
+    // });                                               |
+    //                                                   |
+    // let rx_fut = pin!(async {                         |
+    //     // --snip--                                   |
+    // });                                               |
+    //                                                   |
+    // let tx_fut = pin!(async move {                    |
+    //     // --snip--                                   |
+    // });                                               |
+    //                                                   |
+    // let futures: Vec<Pin<&mut dyn Future<Output = ()>>> = |
+    //     vec![tx1_fut, rx_fut, tx_fut];                    |
+}
+
+fn slow(name: &str, ms: u64) {
+    thread::sleep(Duration::from_millis(ms));
+    println!("'{name}' ran for {ms}ms");
+}
+
+async fn race_main() {
+    let a = async {
+        println!("'a' started.");
+        slow("a", 30);
+        slow("a", 10);
+        slow("a", 20);
+        trpl::sleep(Duration::from_millis(50)).await;
+        println!("'a' finished.");
+    };
+
+    let b = async {
+        println!("'b' started.");
+        slow("b", 75);
+        slow("b", 10);
+        slow("b", 15);
+        slow("b", 350);
+        trpl::sleep(Duration::from_millis(50)).await;
+        println!("'b' finished.");
+    };
+
+    trpl::race(a, b).await;
+}
+
+async fn bench() {
+    let one_ns = Duration::from_nanos(1);
+    let start = Instant::now();
+    async {
+        for _ in 1..1000 {
+            trpl::sleep(one_ns).await;
+        }
+    }
+    .await;
+    let time = Instant::now() - start;
+    println!(
+        "'sleep' version finished after {} seconds.",
+        time.as_secs_f32()
+    );
+
+    let start = Instant::now();
+    async {
+        for _ in 1..1000 {
+            trpl::yield_now().await;
+        }
+    }
+    .await;
+    let time = Instant::now() - start;
+    println!(
+        "'yield' version finished after {} seconds.",
+        time.as_secs_f32()
+    );
+}
+
+async fn timeout<F: Future>(fut: F, max_time: Duration) -> Result<F::Output, Duration> {
+    match trpl::race(fut, trpl::sleep(max_time)).await {
+        Either::Left(output) => Ok(output),
+        Either::Right(_) => Err(max_time),
+    }
+}
+
+async fn test_timeout() {
+    trpl::run(async {
+        let slow = async {
+            trpl::sleep(Duration::from_secs(5)).await;
+            "Finally finished"
+        };
+
+        match timeout(slow, Duration::from_secs(2)).await {
+            Ok(message) => println!("Succeeded with '{message}'"),
+            Err(duration) => {
+                println!("Failed after {} seconds", duration.as_secs())
+            }
         }
     });
 }
 
+async fn trpl_join() {
+    let fut1 = async {
+        for i in 1..10 {
+            println!("hi number {i} from the first task!");
+            trpl::sleep(Duration::from_millis(500)).await;
+        }
+    };
+
+    let fut2 = async {
+        for i in 1..5 {
+            println!("hi number {i} from the second task!");
+            trpl::sleep(Duration::from_millis(500)).await;
+        }
+    };
+
+    trpl::join(fut1, fut2).await;
+}
+
 pub fn main() {
+    // println!("-----------------------------------");
+    // trpl::run(async { trpl_main().await });
+    // let res = fetch_example();
+    // println!("{res}");
+    // println!("-----------------------------------");
+    // test_html_parser();
+    // println!("-----------------------------------");
+    // run_waker();
+    // println!("-----------------------------------");
+    // trpl::run(async {
+    //     trpl_join().await;
+    // })
     println!("-----------------------------------");
-    trpl_main();
-    let res = fetch_example();
-    println!("{res}");
+    // trpl::run(async { race_main().await });
+    // trpl::run(async { bench().await });
+    stream_main();
     println!("-----------------------------------");
-    test_html_parser();
-    println!("-----------------------------------");
-    run_waker();
 }
 
 fn fetch_example() -> String {
@@ -212,4 +389,69 @@ fn run_waker() {
             }
         }
     }
+}
+
+// streaming time
+
+use trpl::{ReceiverStream, Stream, StreamExt};
+
+fn stream_main() {
+    trpl::run(async {
+        let values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let iter = values.iter().map(|n| n * 2);
+        let mut stream = trpl::stream_from_iter(iter);
+
+        while let Some(value) = stream.next().await {
+            println!("The value was: {value}");
+        }
+    });
+    trpl::run(async {
+        let mut messages = pin!(get_messages().timeout(Duration::from_millis(200)));
+
+        while let Some(result) = messages.next().await {
+            match result {
+                Ok(message) => println!("{message}"),
+                Err(reason) => eprintln!("Problem: {reason:?}"),
+            }
+        }
+    });
+}
+
+fn get_messages() -> impl Stream<Item = String> {
+    let (tx, rx) = trpl::channel();
+
+    trpl::spawn_task(async move {
+        let messages = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
+
+        for (index, message) in messages.into_iter().enumerate() {
+            let time_to_sleep = if index % 2 == 0 { 100 } else { 300 };
+            trpl::sleep(Duration::from_millis(time_to_sleep)).await;
+
+            if let Err(send_error) = tx.send(format!("Message: '{message}'")) {
+                eprintln!("Cannot send message '{message}': {send_error}");
+                break;
+            }
+        }
+    });
+
+    ReceiverStream::new(rx)
+}
+
+fn get_intervals() -> impl Stream<Item = u32> {
+    let (tx, rx) = trpl::channel();
+
+    trpl::spawn_task(async move {
+        let mut count = 0;
+        loop {
+            trpl::sleep(Duration::from_millis(1)).await;
+            count += 1;
+
+            if let Err(send_error) = tx.send(count) {
+                eprintln!("Could not send interval {count}: {send_error}");
+                break;
+            };
+        }
+    });
+
+    ReceiverStream::new(rx)
 }
