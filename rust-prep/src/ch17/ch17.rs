@@ -5,7 +5,6 @@ use std::future::Future;
 use std::io::{Read, Write};
 use std::net::TcpStream;
 use std::pin::{pin, Pin};
-use std::process::Output;
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -174,6 +173,7 @@ async fn bench() {
     );
 }
 
+#[allow(dead_code)]
 async fn timeout<F: Future>(fut: F, max_time: Duration) -> Result<F::Output, Duration> {
     match trpl::race(fut, trpl::sleep(max_time)).await {
         Either::Left(output) => Ok(output),
@@ -181,6 +181,7 @@ async fn timeout<F: Future>(fut: F, max_time: Duration) -> Result<F::Output, Dur
     }
 }
 
+#[allow(dead_code)]
 async fn test_timeout() {
     trpl::run(async {
         let slow = async {
@@ -216,21 +217,22 @@ async fn trpl_join() {
 }
 
 pub fn main() {
-    // println!("-----------------------------------");
-    // trpl::run(async { trpl_main().await });
-    // let res = fetch_example();
-    // println!("{res}");
-    // println!("-----------------------------------");
-    // test_html_parser();
-    // println!("-----------------------------------");
-    // run_waker();
-    // println!("-----------------------------------");
-    // trpl::run(async {
-    //     trpl_join().await;
-    // })
     println!("-----------------------------------");
-    // trpl::run(async { race_main().await });
-    // trpl::run(async { bench().await });
+    trpl::run(async { trpl_main().await });
+    let res = fetch_example();
+    println!("{res}");
+    println!("-----------------------------------");
+    test_html_parser();
+    println!("-----------------------------------");
+    run_waker();
+    println!("-----------------------------------");
+    trpl::run(async {
+        trpl_join().await;
+    });
+
+    println!("-----------------------------------");
+    trpl::run(async { race_main().await });
+    trpl::run(async { bench().await });
     stream_main();
     println!("-----------------------------------");
 }
@@ -437,6 +439,7 @@ fn get_messages() -> impl Stream<Item = String> {
     ReceiverStream::new(rx)
 }
 
+#[allow(dead_code)]
 fn get_intervals() -> impl Stream<Item = u32> {
     let (tx, rx) = trpl::channel();
 
