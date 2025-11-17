@@ -4,7 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-quote = "1.0.42"
 rand = "0.8.5"
-syn = "2.0.110"
 trpl = { path = "../trpl"}

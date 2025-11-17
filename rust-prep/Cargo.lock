@@ -1044,9 +1044,7 @@ dependencies = [
 name = "rust-book"
 version = "0.1.0"
 dependencies = [
- "quote",
  "rand 0.8.5",
- "syn",
  "trpl",
 ]
 
